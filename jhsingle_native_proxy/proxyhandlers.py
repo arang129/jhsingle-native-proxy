@@ -765,7 +765,8 @@ class SuperviseAndProxyHandler(LocalProxyHandler):
                         self.stderr_str = None
                         self.stdout_str = None
 
-                        stderr, stdout = await proc.proc.communicate()
+                        underlying = proc.proc._proc if hasattr(proc.proc, '_proc') else proc.proc
+                        stderr, stdout = await underlying.communicate()
 
                         if stderr:
                             self.stderr_str = str(stderr.decode("utf-8"))
@@ -786,7 +787,8 @@ class SuperviseAndProxyHandler(LocalProxyHandler):
                         async def pipe_output(proc, pipename, log):
                             while True:
                                 if proc.proc:
-                                    stream = getattr(proc.proc, pipename, None)
+                                    underlying = proc.proc._proc if hasattr(proc.proc, '_proc') else proc.proc
+                                    stream = getattr(underlying, pipename, None)
                                     if stream:
                                         try:
                                             line = await stream.readline()
