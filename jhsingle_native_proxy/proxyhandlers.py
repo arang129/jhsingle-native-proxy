@@ -513,7 +513,7 @@ class ProxyHandler(HubOAuthenticated, WebSocketHandlerMixin):
     def proxy_request_options(self):
         '''A dictionary of options to be used when constructing
         a tornado.httpclient.HTTPRequest instance for the proxy request.'''
-        return dict(follow_redirects=False, request_timeout=self.settings['request_timeout'])
+        return dict(follow_redirects=False, request_timeout=self.settings['request_timeout'], allow_nonstandard_methods=True)
 
     def check_xsrf_cookie(self):
         '''
