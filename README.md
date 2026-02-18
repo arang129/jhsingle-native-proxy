@@ -12,6 +12,13 @@ visualization frameworks.
 
 ## Install and Run
 
+```
+    sudo -E pip install git+https://github.com/arang129/jhsingle-native-proxy.git
+    sudo -E pip install --upgrade git+https://github.com/arang129/jhsingle-native-proxy.git
+    sudo -E pip uninstall jhsingle-native-proxy
+```
+
+
 Install using pip.
 
 ```
