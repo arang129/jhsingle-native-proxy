@@ -116,6 +116,21 @@ to allow any authenticated user access. (i.e. anyone who has an account on the J
 
 --request-timeout=300 specifies the timeout in seconds that it waits for the underlying subprocess to return when proxying normal requests. Default is 300.
 
+--max-body-size=104857600 specifies the largest HTTP request body accepted by the proxy in bytes. The receive buffer is increased to the same value. For example, to accept media uploads up to 2 GiB plus multipart overhead, use `--max-body-size=2164260864`.
+
+--body-timeout=60 specifies how many seconds the client may take to send an HTTP request body. Increase this for large uploads or slow connections, for example `--body-timeout=1800`.
+
+Large-upload example:
+
+```
+jhsingle-native-proxy \
+  --max-body-size 2164260864 \
+  --body-timeout 1800 \
+  --request-timeout 1800 \
+  --aiohttp-request-timeout 1800 \
+  -- your-web-app --port {port}
+```
+
 {origin_host} in the command argument will be replaced with the first 'host' seen in any request to the jhsingle-native-proxy server.
 
 --last-activity-interval=300 specifies how often in seconds to update the hub to provide the last time any traffic passed through
@@ -139,6 +154,11 @@ the proxy (default 300). Specify 0 to never update.
 --progressive - flush buffer from underlying service whenever chunks appear (this is useful to see results from Voila sooner)
 
 ## Changelog
+
+### v0.8.6
+
+- Add `--max-body-size` to configure Tornado's HTTP request body and receive-buffer limits.
+- Add `--body-timeout` to support large uploads over slower connections.
 
 ### v0.8.3 released 25 Sep 2024
 

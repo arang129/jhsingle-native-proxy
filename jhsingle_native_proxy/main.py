@@ -18,6 +18,10 @@ from .activity import start_keep_alive, configure_http_client
 from .gitwrapper import GitWrapper
 
 
+DEFAULT_MAX_BODY_SIZE = 100 * 1024 * 1024
+DEFAULT_BODY_TIMEOUT = 60
+
+
 def patch_default_headers():
     if hasattr(RequestHandler, '_orig_set_default_headers'):
         return
@@ -168,13 +172,17 @@ def get_port_from_env():
 @click.option('--query-user-info/--no-query-user-info', default=False, help='Add a CDSDASHBOARDS_JH_USER GET query arg in HTTP request to process containing JupyterHub user data')
 @click.option('--progressive/--no-progressive', default=False, help='Progressively flush responses as they arrive (good for Voila)')
 @click.option('--websocket-max-message-size', default=0, type=click.INT, help='Max size of websocket data (default 0, meaning leave to library defaults)')
+@click.option('--max-body-size', default=DEFAULT_MAX_BODY_SIZE, type=click.IntRange(min=1), show_default=True,
+              help='Maximum HTTP request body size in bytes. The receive buffer is increased to the same size.')
+@click.option('--body-timeout', default=DEFAULT_BODY_TIMEOUT, type=click.IntRange(min=1), show_default=True,
+              help='Maximum time in seconds allowed while receiving an HTTP request body.')
 @click.argument('command', nargs=-1, required=True)
 @click.option('--aiohttp-no-ssl-connector', is_flag=True, help='Sets up pre-configured TCP connector. Include to disable SSL verification')
 @click.option('--aiohttp-request-timeout', default=300, type=click.INT, help='Timeout settings for aiohttp are stored in ClientTimeout data structure. The maximal number of seconds for the whole operation including connection establishment, request sending and response reading. Set to 0 to disable)')
 
 def run(port, destport, ip, presentation_path, debug, logs, authtype, request_timeout, last_activity_interval, force_alive, ready_check_path, 
         ready_timeout, repo, repobranch, repofolder, conda_env, allow_root, notebookapp_allow_origin, forward_user_info, query_user_info, progressive, 
-        websocket_max_message_size, aiohttp_no_ssl_connector, aiohttp_request_timeout, command):
+        websocket_max_message_size, max_body_size, body_timeout, aiohttp_no_ssl_connector, aiohttp_request_timeout, command):
     
     # enable_pretty_logging sets StreamHandler and Formatter for the specified loggers so that Jhsingle-native-proxy logs are formatted, sent to sys.stderr, and then outputted in the console. 
     print("Setting pretty logging")
@@ -200,7 +208,14 @@ def run(port, destport, ip, presentation_path, debug, logs, authtype, request_ti
 
     ssl_options = get_ssl_options()
 
-    http_server = HTTPServer(app, ssl_options=ssl_options, xheaders=True)
+    http_server = HTTPServer(
+        app,
+        ssl_options=ssl_options,
+        xheaders=True,
+        max_body_size=max_body_size,
+        max_buffer_size=max_body_size,
+        body_timeout=body_timeout,
+    )
 
     http_server.listen(port, ip)
 
